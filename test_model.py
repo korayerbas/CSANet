@@ -9,15 +9,14 @@ from torchvision import transforms
 import torch
 
 from load_data import LoadVisualData
-from model import PyNET
+from model_csa import CSANET
 import utils
 import imageio
 
 to_image = transforms.Compose([transforms.ToPILImage()])
 
-level, restore_epoch, dataset_dir, use_gpu, orig_model = utils.process_test_model_args(sys.argv)
-#level, restore_epoch, dataset_dir, use_gpu, orig_model =  0, 57, '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres_dataset', "true", "true"
-dslr_scale = float(1) / (2 ** (level - 1))
+restore_epoch, dataset_dir, use_gpu, orig_model = utils.process_test_model_args(sys.argv)
+dslr_scale = 1
 
 
 def test_model():
@@ -31,19 +30,16 @@ def test_model():
 
     # Creating dataset loaders
 
-    visual_dataset = LoadVisualData(dataset_dir, 8, dslr_scale, level, full_resolution=True)
+    visual_dataset = LoadVisualData(dataset_dir, 2, dslr_scale, full_resolution=True)
     visual_loader = DataLoader(dataset=visual_dataset, batch_size=1, shuffle=False, num_workers=0,
                                pin_memory=True, drop_last=False)
 
     # Creating and loading pre-trained PyNET model
 
-    model = PyNET(level=level, instance_norm=True, instance_norm_level_1=True).to(device)
+    model = CSANET(instance_norm=True, instance_norm_level_1=True).to(device)
     model = torch.nn.DataParallel(model)
 
-    if orig_model == "true":
-        model.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/PYNET/models/original/pynet_level_0.pth"), strict=True)
-    else:
-        model.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/model/pynet_level_0_epoch_59_lght.pth"), strict=True)
+    model.load_state_dict(torch.load("C:\\PYNET\\models\\csanet" + "_epoch_" + str(restore_epoch) + ".pth"), strict=True)
 
     if use_gpu == "true":
         model.half()
@@ -73,12 +69,7 @@ def test_model():
             enhanced = np.asarray(to_image(torch.squeeze(enhanced.float().detach().cpu())))
 
             # Save the results as .png images
-
-            if orig_model == "true":
-                imageio.imwrite("/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/dataset/full_res_results/" + str(j) + "_level_" + str(level) + "_orig.png", enhanced)
-            else:
-                imageio.imwrite("/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/dataset/full_res_results/" + str(j) + "_level_" + str(level) +
-                        "_epoch_" + str(restore_epoch) + "_lght.png", enhanced)
+            imageio.imwrite("C:\\PYNET\\dataset\\full_res_results" + str(j) + "_epoch_" + str(restore_epoch) + ".png", enhanced)
 
 
 if __name__ == '__main__':
