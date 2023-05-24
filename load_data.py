@@ -51,11 +51,11 @@ class LoadData(Dataset):
 
     def __getitem__(self, idx):
 
-        raw_image = np.asarray(imageio.imread(os.path.join(self.raw_dir, str(idx)+ ".png"))) 
+        raw_image = np.asarray(imageio.imread(os.path.join(self.raw_dir, str(idx) + '.png')))
         raw_image = extract_bayer_channels(raw_image)
         raw_image = torch.from_numpy(raw_image.transpose((2, 0, 1)))
         
-        dslr_image = imageio.imread(os.path.join(self.dslr_dir, str(idx) + ".jpg")) 
+        dslr_image = imageio.imread(os.path.join(self.dslr_dir, str(idx) + ".jpg")) #jpg changed to png
         dslr_image = np.asarray(dslr_image)
         
         im = Image.fromarray(dslr_image)
@@ -66,29 +66,27 @@ class LoadData(Dataset):
         #dslr_image = misc.imread(os.path.join(self.dslr_dir, str(idx) + ".jpg"))
         #dslr_image = np.asarray(dslr_image)
         #dslr_image = np.float32(misc.imresize(dslr_image, self.scale / 2.0)) / 255.0
-
+        
+        #print('dslr shape: ',dslr_image.shape)
+        #print('raw_image shape: ',raw_image.shape)
+        
         return raw_image, dslr_image
 
 
 class LoadVisualData(Dataset):
 
-    def __init__(self, data_dir, size, scale, level, full_resolution=True):
-        self.raw_dir = os.path.join(data_dir,'test','full_resolution')
-        #self.raw_dir = data_dir
-        print("raw_dir: ",self.raw_dir)
+    def __init__(self, data_dir, size, scale, full_resolution=False):
 
+        self.raw_dir = os.path.join(data_dir,'test','full_resolution')
+        #self.raw_dir = os.path.join(data_dir)
         self.dataset_size = size
         self.scale = scale
-        self.level = level
         self.full_resolution = full_resolution
         self.test_images = os.listdir(self.raw_dir)
-
-        if level > 1 or full_resolution:
+        
+        if full_resolution:
             self.image_height = 1440
             self.image_width = 1984
-        elif level > 0:
-            self.image_height = 1280
-            self.image_width = 1280
         else:
             self.image_height = 960
             self.image_width = 960
@@ -97,17 +95,14 @@ class LoadVisualData(Dataset):
         return self.dataset_size
 
     def __getitem__(self, idx):
-        print('idx: ', idx) #self control
+
         raw_image = np.asarray(imageio.imread(os.path.join(self.raw_dir, self.test_images[idx])))
         raw_image = extract_bayer_channels(raw_image)
-
-        if self.level > 1 or self.full_resolution:
+        if self.full_resolution:
             raw_image = raw_image[0:self.image_height, 0:self.image_width, :]
-        elif self.level > 0:
-            raw_image = raw_image[80:self.image_height + 80, 352:self.image_width + 352, :]
         else:
             raw_image = raw_image[240:self.image_height + 240, 512:self.image_width + 512, :]
-
+        
         raw_image = torch.from_numpy(raw_image.transpose((2, 0, 1)))
 
         return raw_image
