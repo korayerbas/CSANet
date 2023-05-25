@@ -24,8 +24,8 @@ torch.manual_seed(0)
 
 # Processing command arguments
 
-batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  15, 5e-4, None, 50, '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres_dataset'
-#level, batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir = process_command_args(sys.argv)
+#batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  15, 5e-4, None, 50, '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres_dataset'
+batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir = process_command_args(sys.argv)
 dslr_scale = float(1) / (2 ** (0 - 1))
 
 # Dataset size
