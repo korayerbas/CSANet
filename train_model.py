@@ -24,7 +24,7 @@ torch.manual_seed(0)
 
 # Processing command arguments
 
-batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  1, 5e-4, None, 1, "C:\\PYNET\\dataset"
+batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  15, 5e-4, None, 50, '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres_dataset'
 #level, batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir = process_command_args(sys.argv)
 dslr_scale = float(1) / (2 ** (0 - 1))
 
@@ -65,7 +65,7 @@ def train_model():
     # Restoring the variables
 
     if restore_epoch != None:
-                generator.load_state_dict(torch.load("C:\\PYNET\\models\\epoch_" + str(restore_epoch) + ".pth"), strict=False)
+                generator.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/model/" + str(restore_epoch) + "_csa.pth"), strict=False)
     # Losses
 
     VGG_19 = vgg_19(device)
@@ -117,7 +117,7 @@ def train_model():
                 # Save the model that corresponds to the current epoch
 
                 generator.eval().cpu()
-                torch.save(generator.state_dict(), "C:\\PYNET\\models\\epoch_" + str(epoch) + ".pth")
+                torch.save(generator.state_dict(), "/content/gdrive/MyDrive/ColabNotebooks/CSANet/model_csa/" + str(epoch) + ".pth")
                 generator.to(device).train()
 
                 # Save visual results for several test images
@@ -136,7 +136,7 @@ def train_model():
                         enhanced = generator(raw_image.detach())
                         enhanced = np.asarray(to_image(torch.squeeze(enhanced.detach().cpu())))
 
-                        imageio.imwrite("C:\\PYNET\\dataset\\full_res_results\\img_" + str(j) +  "_epoch_" +
+                        imageio.imwrite("/content/gdrive/MyDrive/ColabNotebooks/CSANet/results_csa/" + str(j) +  "_epoch_" +
                                         str(epoch) + ".jpg", enhanced)
 
                 # Evaluate the model
