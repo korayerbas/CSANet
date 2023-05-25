@@ -4,20 +4,16 @@ import numpy as np
 import sys
 import os
 
-NUM_DEFAULT_TRAIN_EPOCHS = [60, 35, 20, 20, 12]
-
-
 def process_command_args(arguments):
 
     # Specifying the default parameters
 
-    level = 4
     batch_size = 50
 
     learning_rate = 5e-5
 
     restore_epoch = None
-    num_train_epochs = 12
+    num_train_epochs = 50
 
     dataset_dir = '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/dataset'
     #dataset_dir = 'raw_images/'
