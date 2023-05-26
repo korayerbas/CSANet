@@ -65,7 +65,7 @@ def train_model():
     # Restoring the variables
 
     if restore_epoch != None:
-                generator.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/CSANet/model_csa" + str(restore_epoch) + ".pth"), strict=False)
+                generator.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/CSANet/model_csa/" + str(restore_epoch) + ".pth"), strict=False)
     # Losses
 
     VGG_19 = vgg_19(device)
