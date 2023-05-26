@@ -8,12 +8,12 @@ def process_command_args(arguments):
 
     # Specifying the default parameters
 
-    batch_size = 5
+    batch_size = 15
 
     learning_rate = 5e-5
 
-    restore_epoch = None
-    num_train_epochs = 8
+    restore_epoch = 5
+    num_train_epochs = 40
 
     dataset_dir = '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres/dataset'
     #dataset_dir = 'raw_images/'
