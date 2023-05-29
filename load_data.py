@@ -32,7 +32,7 @@ def extract_bayer_channels(raw):
 
 class LoadData(Dataset):
 
-    def __init__(self, dataset_dir, dataset_size, dslr_scale, test=False):
+    def __init__(self, dataset_dir, dataset_size, dslr_scale, test=True):
 
         if test:
             self.raw_dir = os.path.join(dataset_dir, 'test', 'raw')
