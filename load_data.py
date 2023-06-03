@@ -75,7 +75,7 @@ class LoadData(Dataset):
 
 class LoadVisualData(Dataset):
 
-    def __init__(self, data_dir, size, scale, full_resolution=False):
+    def __init__(self, data_dir, size, scale, full_resolution=True):
 
         self.raw_dir = os.path.join(data_dir,'test','full_resolution')
         #self.raw_dir = os.path.join(data_dir)
@@ -83,14 +83,9 @@ class LoadVisualData(Dataset):
         self.scale = scale
         self.full_resolution = full_resolution
         self.test_images = os.listdir(self.raw_dir)
+        self.image_height = 1440
+        self.image_width = 1984
         
-        if full_resolution:
-            self.image_height = 1440
-            self.image_width = 1984
-        else:
-            self.image_height = 960
-            self.image_width = 960
-
     def __len__(self):
         return self.dataset_size
 
@@ -98,11 +93,7 @@ class LoadVisualData(Dataset):
 
         raw_image = np.asarray(imageio.imread(os.path.join(self.raw_dir, self.test_images[idx])))
         raw_image = extract_bayer_channels(raw_image)
-        if self.full_resolution:
-            raw_image = raw_image[0:self.image_height, 0:self.image_width, :]
-        else:
-            raw_image = raw_image[240:self.image_height + 240, 512:self.image_width + 512, :]
-        
+        raw_image = raw_image[0:self.image_height, 0:self.image_width, :]
         raw_image = torch.from_numpy(raw_image.transpose((2, 0, 1)))
 
         return raw_image
