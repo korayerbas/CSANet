@@ -12,8 +12,8 @@ import sys
 
 from load_data import LoadData, LoadVisualData
 from msssim import MSSSIM
-from model_csa import CSANET#, cha_loss
-
+from model_csa2 import CSANET
+from charbonnier_loss import pixel_loss
 from vgg import vgg_19
 from utils import normalize_batch, process_command_args
 #from charbonnier_loss import cha_loss
@@ -24,8 +24,8 @@ torch.manual_seed(0)
 
 # Processing command arguments
 
-#batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  15, 5e-4, None, 50, '/content/gdrive/MyDrive/ColabNotebooks/pynet_fullres_dataset'
-batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir = process_command_args(sys.argv)
+batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir =  1, 5e-4, None, 1, "C:\\PYNET\\dataset"
+#level, batch_size, learning_rate, restore_epoch, num_train_epochs, dataset_dir = process_command_args(sys.argv)
 dslr_scale = float(1) / (2 ** (0 - 1))
 
 # Dataset size
@@ -65,7 +65,7 @@ def train_model():
     # Restoring the variables
 
     if restore_epoch != None:
-                generator.load_state_dict(torch.load("/content/gdrive/MyDrive/ColabNotebooks/CSANet/model_csa/" + str(restore_epoch) + ".pth"), strict=False)
+                generator.load_state_dict(torch.load("C:\\PYNET\\models\\epoch_" + str(restore_epoch) + ".pth"), strict=False)
     # Losses
 
     VGG_19 = vgg_19(device)
@@ -100,12 +100,13 @@ def train_model():
             target_vgg = VGG_19(normalize_batch(y))
             loss_content = MSE_loss(enhanced_vgg, target_vgg)
             loss_ssim = MS_SSIM(enhanced, y)
-            #print('type ssim: ', type(loss_ssim))
-            #pixel_loss = cha_loss(enhanced, y) ;print('type pixel_loss: ', type(pixel_loss)); print('pixel_loss: ',pixel_loss)
+            #print('type ssim: ', type(loss_ssim)) ### torch.Tensor
+            
             #pixel_loss = torch.mean(torch.sqrt(y - enhanced) + torch.sqrt(torch.tensor([1e-3])).to(device))
-            pixel_loss = torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
+            #pixel_loss = torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
             #print('type pixel_loss: ', type(pixel_loss)); print('pixel_loss: ',pixel_loss)
-            total_loss = pixel_loss + loss_mse * 0 + loss_content * 0.001 + (1 - loss_ssim) * 0.1
+            loss_pixel = pixel_loss(y, enhanced, eps=1e-6); print('loss pixel: ',loss_pixel);print('type pixel_loss: ', type(loss_pixel))
+            total_loss = loss_pixel + loss_mse * 0 + loss_content * 0.001 + (1 - loss_ssim) * 0.1
 
             # Perform the optimization steps
 
@@ -117,7 +118,7 @@ def train_model():
                 # Save the model that corresponds to the current epoch
 
                 generator.eval().cpu()
-                torch.save(generator.state_dict(), "/content/gdrive/MyDrive/ColabNotebooks/CSANet/model_csa/" + str(epoch) + ".pth")
+                torch.save(generator.state_dict(), "C:\\PYNET\\models\\epoch_" + str(epoch) + ".pth")
                 generator.to(device).train()
 
                 # Save visual results for several test images
@@ -136,7 +137,7 @@ def train_model():
                         enhanced = generator(raw_image.detach())
                         enhanced = np.asarray(to_image(torch.squeeze(enhanced.detach().cpu())))
 
-                        imageio.imwrite("/content/gdrive/MyDrive/ColabNotebooks/CSANet/results_csa/" + str(j) +  "_epoch_" +
+                        imageio.imwrite("C:\\PYNET\\dataset\\full_res_results\\img_" + str(j) +  "_epoch_" +
                                         str(epoch) + ".jpg", enhanced)
 
                 # Evaluate the model
@@ -162,7 +163,8 @@ def train_model():
                         loss_mse_eval += loss_mse_temp
                         loss_psnr_eval += 20 * math.log10(1.0 / math.sqrt(loss_mse_temp))
                         loss_ssim_eval += MS_SSIM(y, enhanced)
-                        loss_pixel_eval += torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
+                        #loss_pixel_eval += torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
+                        loss_pixel_eval += pixel_loss(y, enhanced, eps=1e-6)
                         enhanced_vgg_eval = VGG_19(normalize_batch(enhanced)).detach()
                         target_vgg_eval = VGG_19(normalize_batch(y)).detach()
 
