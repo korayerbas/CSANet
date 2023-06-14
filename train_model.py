@@ -13,7 +13,7 @@ import sys
 from load_data import LoadData, LoadVisualData
 from msssim import MSSSIM
 from model_csa2 import CSANET
-from charbonnier_loss import pixel_loss
+#from charbonnier_loss import pixel_loss
 from vgg import vgg_19
 from utils import normalize_batch, process_command_args
 #from charbonnier_loss import cha_loss
@@ -100,12 +100,9 @@ def train_model():
             target_vgg = VGG_19(normalize_batch(y))
             loss_content = MSE_loss(enhanced_vgg, target_vgg)
             loss_ssim = MS_SSIM(enhanced, y)
-            #print('type ssim: ', type(loss_ssim)) ### torch.Tensor
-            
-            #pixel_loss = torch.mean(torch.sqrt(y - enhanced) + torch.sqrt(torch.tensor([1e-3])).to(device))
-            #pixel_loss = torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
+
+            loss_pixel = torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
             #print('type pixel_loss: ', type(pixel_loss)); print('pixel_loss: ',pixel_loss)
-            loss_pixel = pixel_loss(y, enhanced, eps=1e-6); print('loss pixel: ',loss_pixel);print('type pixel_loss: ', type(loss_pixel))
             total_loss = loss_pixel + loss_mse * 0 + loss_content * 0.001 + (1 - loss_ssim) * 0.1
 
             # Perform the optimization steps
@@ -163,8 +160,7 @@ def train_model():
                         loss_mse_eval += loss_mse_temp
                         loss_psnr_eval += 20 * math.log10(1.0 / math.sqrt(loss_mse_temp))
                         loss_ssim_eval += MS_SSIM(y, enhanced)
-                        #loss_pixel_eval += torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
-                        loss_pixel_eval += pixel_loss(y, enhanced, eps=1e-6)
+                        loss_pixel_eval += torch.sum(torch.sqrt((y - enhanced).pow(2)+ 1e-6**2))
                         enhanced_vgg_eval = VGG_19(normalize_batch(enhanced)).detach()
                         target_vgg_eval = VGG_19(normalize_batch(y)).detach()
 
